@@ -3,6 +3,24 @@
 Created on Sun Oct  8 11:02:41 2017
 
 @author: sasha
+
+
+A dummy script to visualize the world generation to be implemented in the mod.
+The idea is to be able to determine exactly what type of chunk to render using only the chunk coordinates.
+
+General rules:
+- A road takes up 1 chunk (road cross section: E#\__________/#E where E is sidewalk, _ is concrete slab, # grass, \ is concrete steps)
+- A house + yard takes up 4 chunks
+- Each house must have 2 road blocks in front of it
+> Start with an infinite grid consisting of squares of 4 houses: call each one of these "tiles"
+> Add coherent perturbations as follows:
+a) remove 2 adjacent vertical roads
+b) remove 2 adjacent horizontal roads
+avoid having both perturbations on the same grid tile!!
+
+To avoid duplicate perturbations
+1) make adjacent perturbations identical (this results in larger regions with only parallel roads)
+2) overlay this with higher frequency perturbations, to get a somewhat homogenous mix of perturbation scale
 """
 
 import graphics as g
@@ -61,6 +79,7 @@ def woods(i,j):
     '''
 def Houses0 (i,j):
     #i,j in blocks
+    #no roads removed: draw 4 houses as usual
     c1 = g.Circle(pt(x0+(i*5+2)*gridSize,y0 + (j*5+2)*gridSize),gridSize*0.5)
     c1.setFill("yellow")
     c1.draw(win)
