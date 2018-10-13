@@ -1,0 +1,134 @@
+#W = outside wall
+#I = inside wall
+#B = brick
+#. = regular floor
+#` = tile floor
+#/ = slab (lower)
+#\ = slab (upper)
+#L = log
+#s = stair
+#^ = siding (stairs)
+#- = window pane (white)
+
+
+
+
+#1st layer (1 above ground)
+
+ WWWWWWWWWWWWWWWWWWWWW 
+ W.......I```I.......W
+ W.......I```I.......W
+ W.......I```I.......W
+ W.......I```I.......W
+ W.......II.II.......W
+ W...................W 
+ WIIIIIIIIIIII.......W
+ W`````I.............W
+ W`````IIIIIII.......W
+ W`````......I.......W
+ W`````......I.......W
+ W`````I........```..W
+ W`````I........BOB..W
+ WWWWWWW.....I..BBBWWW
+       W.....IBWBBB   
+       WWWWWWW        
+
+#2
+
+ WWWWWWWWWWWWWWWWWWWWW 
+ W       I   I       W
+ W       I   I       W
+ W       I   I       W
+ W       I   I       W
+ W       II II       W
+ W                   W 
+ WIIIIIIIIIIIIL      W
+ W     I      s      W
+ W     IIIIIIIL      W
+ W           I       W
+ W           I       W
+ W     I             W
+ W     I        B^B  W
+ WWWWWWW     W  B BWWW
+       W     WB BBB   
+       WW^^^WW        
+
+#3
+
+ WWWWWWWWWWWWWWW^^^WWW 
+ W       I   I       W
+ W       I   I       W
+ W       I   I       W
+ W       I   I       ^
+ W       II II       W
+ W                   W 
+ WIIIIIIIIIIIL       W
+ W     I     s       W
+ W     IIIIIII       W
+ W           I       ^
+ W           I       W
+ W     I             W
+ W     I        BBB  W
+ WWW^WWW     W  B BW^W
+       W     WB BBB   
+       WW---WW        
+
+#4
+
+ WWWWWWWWWWWWWWW---WWW 
+ W       I   I       W
+ W       I   I       W
+ W       I   I       W
+ W       I   I       -
+ W       II/II       W
+ W       /           W 
+ WIIIIIIIIIIL        W
+ W     I    s        W
+ W     IIIIIII       W
+ W           I       -
+ W           I       W
+ W     I             W
+ W     I        BBB  W
+ WWW-WWW     W  B BW-W
+       W     WB^BBB   
+       WW---WW        
+
+#5
+
+ WWWWWWWWWWWWWWW---WWW 
+ W       I   I       W
+ W       I   I       W
+ W       I   I       W
+ W       I   I       -
+ W       IIIII       W
+ W       I           W 
+ WIIIIIIIIIL         W
+ W     I   s         W
+ W     IIIIIII       W
+ W           I       -
+ W           I       W
+ W     I             W
+ W     I        BxB  W
+ WWW-WWW     W  BBBW-W
+       W     WB-BBB   
+       WW---WW         
+
+#6
+
+ WWWWWWWWWWWWWWW^^^WWW 
+ W       I   I       W
+ W       I   I       W
+ W       I   I       W
+ W       I   I       ^
+ W       IIIII       W
+ W       I           W 
+ WIIIIIIIIL          W
+ W     I  s          W
+ W     IIIIIII       W
+ W     I     I       ^
+ W     I     I       W
+ W     I     I       W
+ W     I     I       W
+ WWW^WWW     W  BBBW^W
+       W     WB^BBB   
+       WW^^^WW        
