@@ -6,13 +6,17 @@ import java.util.Random;
 import javax.annotation.Nullable;
 
 import net.minecraft.block.Block;
+import net.minecraft.block.BlockDirt;
 import net.minecraft.block.BlockFalling;
 import net.minecraft.block.BlockSlab;
 import net.minecraft.block.BlockStairs;
 import net.minecraft.block.BlockStone;
+import net.minecraft.block.BlockStoneSlab;
+import net.minecraft.block.BlockStainedHardenedClay;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.EnumCreatureType;
 import net.minecraft.init.Blocks;
+import net.minecraft.item.EnumDyeColor;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
@@ -41,33 +45,56 @@ public class ChunkProviderSuburb implements IChunkGenerator {
     private final int minY = 20;
     private int groundLevel = 20;
     
-    //default chunk blocks
-    private final Block[] cachedBlocks = {Blocks.BEDROCK,Blocks.STONE,Blocks.STONE,Blocks.DIRT,Blocks.DIRT,Blocks.GRASS};
-    private final Block[][] cachedBlocksMulti = {
-    		{Blocks.BEDROCK},
-    		{Blocks.STONE,Blocks.STONE,Blocks.STONE},//hardest rock mix //MIX#2
-    		{Blocks.STONE,Blocks.STONE,Blocks.STONE},//hardest rock mix //MIX#2
-    		{Blocks.STONE,Blocks.STONE},//hard rock mix
-    		{Blocks.STONE,Blocks.STONE,Blocks.STONE},//hard rock mix / rock //MIX#1
-    		{Blocks.STONE},//rock
-    		{Blocks.DIRT,Blocks.STONE}, //MIX#2
-    		{Blocks.AIR},//{Blocks.DIRT,Blocks.DIRT,Blocks.SAND,Blocks.HARDENED_CLAY}, //MIX#1
-    		{Blocks.AIR}//{Blocks.GRASS}
-    		};
-    //specify any terrain blocks that need properties (in order of hardness)
-    private final BlockStone.EnumType StoneTypes[] = {BlockStone.EnumType.GRANITE,BlockStone.EnumType.DIORITE,BlockStone.EnumType.ANDESITE,BlockStone.EnumType.STONE};
-    private final int[][] cachedStoneTypes = {
-    		{0},
-    		{0,1,2},
-    		{0,1,2},
-    		{1,2},
-    		{3,1,2},
-    		{3},
-    		{3,3}};
+    //Iblockstate caches
+    private final IBlockState dirt = Blocks.DIRT.getDefaultState();
+    private final IBlockState grass = Blocks.GRASS.getDefaultState();
+    private final IBlockState bricks = Blocks.BRICK_BLOCK.getDefaultState();
+    private final IBlockState b_stairs = Blocks.BRICK_STAIRS.getDefaultState();
+    private final IBlockState sewLiq = Blocks.WATER.getDefaultState();
+    private final IBlockState waterPipe = Blocks.IRON_BARS.getDefaultState();
+    private final IBlockState intCable = Blocks.NETHER_BRICK_FENCE.getDefaultState();
+    
+    
+    //default chunk Block STATES
+    private final IBlockState[][] cachedBlockStates = {
+    		{Blocks.BEDROCK.getDefaultState()},
+    		{Blocks.STONE.getDefaultState().withProperty(BlockStone.VARIANT,BlockStone.EnumType.DIORITE),
+    			Blocks.STONE.getDefaultState().withProperty(BlockStone.VARIANT,BlockStone.EnumType.GRANITE)},//hardest rock mix //MIX#2
+    		{Blocks.STONE.getDefaultState().withProperty(BlockStone.VARIANT,BlockStone.EnumType.DIORITE),
+    			Blocks.STONE.getDefaultState().withProperty(BlockStone.VARIANT,BlockStone.EnumType.DIORITE),
+    			Blocks.STONE.getDefaultState().withProperty(BlockStone.VARIANT,BlockStone.EnumType.GRANITE)},//hardest rock mix //MIX#2
+    		{Blocks.STONE.getDefaultState().withProperty(BlockStone.VARIANT,BlockStone.EnumType.ANDESITE),
+    			Blocks.STONE.getDefaultState().withProperty(BlockStone.VARIANT,BlockStone.EnumType.DIORITE),
+    			Blocks.STONE.getDefaultState().withProperty(BlockStone.VARIANT,BlockStone.EnumType.DIORITE),
+    			Blocks.STONE.getDefaultState().withProperty(BlockStone.VARIANT,BlockStone.EnumType.GRANITE)},//hard rock mix
+    		{Blocks.STONE.getDefaultState().withProperty(BlockStone.VARIANT,BlockStone.EnumType.ANDESITE),
+    			Blocks.STONE.getDefaultState().withProperty(BlockStone.VARIANT,BlockStone.EnumType.ANDESITE),
+    			Blocks.STONE.getDefaultState().withProperty(BlockStone.VARIANT,BlockStone.EnumType.DIORITE)},//hard rock mix / rock //MIX#1
+    		{Blocks.STONE.getDefaultState(),
+    			Blocks.STONE.getDefaultState().withProperty(BlockStone.VARIANT,BlockStone.EnumType.ANDESITE),
+    			Blocks.STONE.getDefaultState().withProperty(BlockStone.VARIANT,BlockStone.EnumType.ANDESITE),
+    			Blocks.STONE.getDefaultState().withProperty(BlockStone.VARIANT,BlockStone.EnumType.DIORITE)},//rock
+    		{Blocks.STONE.getDefaultState(),
+    			Blocks.STONE.getDefaultState(),
+    			Blocks.STONE.getDefaultState(),
+    			Blocks.GRAVEL.getDefaultState()},//rock
+    		{dirt.withProperty(BlockDirt.VARIANT, BlockDirt.DirtType.COARSE_DIRT),
+    			Blocks.STONE.getDefaultState(),
+    			Blocks.GRAVEL.getDefaultState(),
+    			Blocks.STAINED_HARDENED_CLAY.getDefaultState().withProperty(BlockStainedHardenedClay.COLOR, EnumDyeColor.SILVER)}, //MIX#2
+    		{dirt,
+    			dirt,
+    			dirt,
+    			Blocks.SAND.getDefaultState()}, //MIX#1
+    		{grass}
+    };
+    		
+    
     //road block definitions
-    private final Block[] roadBlocks = {Blocks.GRAVEL,Blocks.STONE_SLAB}; //needs to be length 2
-    private final Block roadCurbStair = Blocks.STONE_BRICK_STAIRS;
-    private final Block sidewalk = Blocks.STONE_SLAB;
+    private final IBlockState[] roadBlocks = {Blocks.GRAVEL.getDefaultState(),Blocks.STONE_SLAB.getDefaultState()}; //needs to be length 2
+    private final IBlockState roadCurbStair = Blocks.STONE_BRICK_STAIRS.getDefaultState();
+    private final IBlockState sidewalk = Blocks.DOUBLE_STONE_SLAB.getDefaultState();
+    
     
     //generation stuff
     public double px = 0.41;    //chance to remove 2 vertical roads
@@ -81,34 +108,46 @@ public class ChunkProviderSuburb implements IChunkGenerator {
         this.xRandMap = new NoiseGeneratorPerlin(random, 1);
         this.yRandMap = new NoiseGeneratorPerlin(random, 1);
         this.terrainMap = new NoiseGeneratorPerlin(random,10);
-        this.stoneMap1 = new NoiseGeneratorPerlin(random,6);
-        this.stoneMap2 = new NoiseGeneratorPerlin(random,6);
+        this.stoneMap1 = new NoiseGeneratorPerlin(random,8);
+        this.stoneMap2 = new NoiseGeneratorPerlin(random,4);//noise on top of stoneMap1
         
-        this.groundLevel = minY + cachedBlocksMulti.length;
-        for(int j=-11;j<12;j+=4) {
-        	System.out.println(Math.floorDiv(j,10));
+        this.groundLevel = minY + cachedBlockStates.length;
+        
+        //debug stuff:
+        double runSum = 0.0;
+        double runMax = 0.0;
+        for(int j=-100;j<100;j++) {
+        	double val = (this.stoneMap2.getValue((double)j, (double)0));
+        	runSum += val;
+        	runMax = val > runMax? val : runMax;
         }
+        runSum = runSum / 200.0;
+        System.out.print("average of NGP 6 octaves: ");
+        System.out.println(runSum);
+        System.out.print("max of NGP 6 octaves: ");
+        System.out.println(runMax);
 	}
 	
 	public IBlockState getCachedBlockstate(int x, int i, int z) {
+		//go through jagged block array
+		//if only one block type, set to that
+		//if multiple, generate block type with weighted chance
+		if((x-20)/10 == 0)
+			return Blocks.AIR.getDefaultState();
 		
-		if(cachedBlocksMulti[i].length>1)  {
-			//return weighted mix of block array
-			for(int j=0;j<cachedBlocksMulti[i].length;j++) {
-				if(x==0 && z==0 && i==0)
-					System.out.println(this.stoneMap1.getValue(x, z));
-				if((this.stoneMap1.getValue((double)x, (double)z) + 2)*0.5 < 0.5 + 0.2*j) {
-					if (cachedBlocksMulti[i][j]==Blocks.STONE){
-						return cachedBlocksMulti[i][j].getDefaultState().withProperty(BlockStone.VARIANT, StoneTypes[cachedStoneTypes[i][j]]);
-					}else
-						return cachedBlocksMulti[i][j].getDefaultState();
-				}
+
+		//return weighted mix of block array
+		for(int j=0;j<cachedBlockStates[i].length;j++) {
+			// should give 1st block with 50% chance, 2nd with 20%, 3d with 20% and 4th with ~10%
+			// (or if no 3d block, 50/50) etc.
+			// for some reason noiseGeneratorPerlin isn't normalized...
+			// I believe 6 octaves gives a gaussian centered on 0 with sigma = 2*9 and tails reaching to +- ~33
+			// 8 octaves gives same with sigma = 2*43 and tails at 115
+			if((Math.abs(this.stoneMap1.getValue((double)x, (double)z)) + this.stoneMap2.getValue((double)(x + 2*i), (double)(z + 2*i)) )/130.0 < 0.35 + ((j == (cachedBlockStates[i].length -1)) ? 2.0 : 0.45*Math.sqrt((double)j))) {
+				return cachedBlockStates[i][j];
 			}
 		}
-		if (cachedBlocksMulti[i][0]==Blocks.STONE){
-			return cachedBlocksMulti[i][0].getDefaultState().withProperty(BlockStone.VARIANT, StoneTypes[cachedStoneTypes[i][0]]);
-		}else
-			return cachedBlocksMulti[i][0].getDefaultState();
+		return Blocks.AIR.getDefaultState();
 	}
 	
 	
@@ -120,14 +159,16 @@ public class ChunkProviderSuburb implements IChunkGenerator {
 	        //road logic
 	        if(x%5==0) { //yroad
 	        	if(z%5==0) { //intersection
-	        		roadChunk(chunkprimer,true,true);
+	        		roadChunk(chunkprimer,true,true,x,z);
 	        		//n e s w
 	        		sidewalkChunk(chunkprimer, keepRoadsY(x,z-1),keepRoadsX(x+1,z),keepRoadsY(x,z+1),keepRoadsX(x-1,z));
+	        		sewerPipes(chunkprimer, keepRoadsY(x,z-1),keepRoadsX(x+1,z),keepRoadsY(x,z+1),keepRoadsX(x-1,z));
 	        	}
 	        	else if(keepRoadsY(x,z)) {
 	        		//roadY
-	        		roadChunk(chunkprimer,true,false);
+	        		roadChunk(chunkprimer,true,false,x,z);
 	        		sidewalkChunk(chunkprimer, true, false, true, false);
+	        		sewerPipes(chunkprimer, true, false, true, false);
 	        	} else {
 	        		genericChunk(chunkprimer,x,z);
 	        	}
@@ -135,8 +176,9 @@ public class ChunkProviderSuburb implements IChunkGenerator {
 	        	//remove this road? HORIZONTAL ROAD
 	        	if(keepRoadsX(x,z)) {
 	        		//roadX
-	                roadChunk(chunkprimer,false,true);
+	                roadChunk(chunkprimer,false,true,x,z);
 	                sidewalkChunk(chunkprimer,  false, true, false,true);
+	                sewerPipes(chunkprimer,  false, true, false,true);
 	        	} else{
 	        		genericChunk(chunkprimer,x,z);
 	        	}
@@ -221,7 +263,7 @@ public class ChunkProviderSuburb implements IChunkGenerator {
 		}
 		
 		//go through cachedBlockIDs and set vertical slices to that
-        for (int i = 0; i < this.cachedBlocksMulti.length; ++i)
+        for (int i = 0; i < this.cachedBlockStates.length; ++i)
         {
             IBlockState iblockstate = this.getCachedBlockstate(Chunkx, i, Chunkz);
 
@@ -244,25 +286,25 @@ public class ChunkProviderSuburb implements IChunkGenerator {
         }
 	}
 
-	void roadChunk(ChunkPrimer cp,boolean xRoad,boolean zRoad){
+	void roadChunk(ChunkPrimer cp,boolean xRoad,boolean zRoad,int x, int z){
 		//generate a road chunk
 		// TODO rewrite into Xroad and Yroad
-		int len = this.cachedBlocksMulti.length;
+		int len = this.cachedBlockStates.length;
 		for(int j = 0; j < 16; ++j){
 			for(int k = 0; k < 16; ++k){
 				for(int i = 0; i< len-2;i++){
 					//this.cachedBlocks[i].getDefaultState()
-					cp.setBlockState(j, i + minY, k, this.getCachedBlockstate(j, i, k));
+					cp.setBlockState(j, i + minY, k, this.getCachedBlockstate(16*x + j, i, 16*z + k));
 				}
 				if((xRoad && j>2 && j<13)||(zRoad && k>2 && k<13)){
 					//inside of the road
 					//under road
-					cp.setBlockState(j, groundLevel-2, k, this.roadBlocks[0].getDefaultState());
+					//cp.setBlockState(j, groundLevel-2, k, this.roadBlocks[0]);
 					//top of road
-					cp.setBlockState(j, groundLevel-1, k, this.roadBlocks[1].getDefaultState());
+					//cp.setBlockState(j, groundLevel-1, k, this.roadBlocks[1]);
 				}else{
-					cp.setBlockState(j, groundLevel-2, k, this.cachedBlocksMulti[len-2][0].getDefaultState());
-					cp.setBlockState(j, groundLevel-1, k, this.cachedBlocksMulti[len-1][0].getDefaultState());
+					cp.setBlockState(j, groundLevel-2, k, this.getCachedBlockstate(16*x + j, len-2, 16*z + k));
+					cp.setBlockState(j, groundLevel-1, k, this.getCachedBlockstate(16*x + j, len-1, 16*z + k));
 
 				}
 			}
@@ -271,104 +313,165 @@ public class ChunkProviderSuburb implements IChunkGenerator {
 	
 	void sidewalkChunk(ChunkPrimer cp, boolean n, boolean e, boolean s, boolean w) {
 		//n,e,s,w: is road attached in corresponding direction?
-		int len = this.cachedBlocks.length;
+		
+		int len = this.cachedBlockStates.length;
 		boolean straightRoad = (n && s) || (e && w);
 		for(int j = 0; j<16; ++j) {
 			//sidewalk
 			if(!n) {
-				cp.setBlockState(j, groundLevel-2, 0, Blocks.DIRT.getDefaultState());
-				cp.setBlockState(j, groundLevel-1, 0, Blocks.STONE_SLAB.getDefaultState().withProperty(BlockSlab.HALF, BlockSlab.EnumBlockHalf.TOP));
+				cp.setBlockState(j, groundLevel-2, 0, dirt);
+				cp.setBlockState(j, groundLevel-1, 0, sidewalk);
 				if((w || j>1) && (e || j<14) || straightRoad) {
 					//grass
-					cp.setBlockState(j, groundLevel-2, 1, Blocks.DIRT.getDefaultState());
-					cp.setBlockState(j, groundLevel-1, 1, Blocks.GRASS.getDefaultState());
+					cp.setBlockState(j, groundLevel-2, 1, dirt);
+					cp.setBlockState(j, groundLevel-1, 1, grass);
 					//stairs
-					cp.setBlockState(j, groundLevel-2, 2, Blocks.DIRT.getDefaultState());
-					cp.setBlockState(j, groundLevel-1, 2, roadCurbStair.getDefaultState().withProperty(BlockStairs.FACING, EnumFacing.NORTH));
+					cp.setBlockState(j, groundLevel-2, 2, dirt);
+					cp.setBlockState(j, groundLevel-1, 2, roadCurbStair.withProperty(BlockStairs.FACING, EnumFacing.NORTH));
 				}
 			}
 			if(!s) {
-				cp.setBlockState(j, groundLevel-2, 15, Blocks.DIRT.getDefaultState());
-				cp.setBlockState(j, groundLevel-1, 15, Blocks.STONE_SLAB.getDefaultState().withProperty(BlockSlab.HALF, BlockSlab.EnumBlockHalf.TOP));
+				cp.setBlockState(j, groundLevel-2, 15, dirt);
+				cp.setBlockState(j, groundLevel-1, 15, sidewalk);
 				if((w || j>1) && (e || j<14) || straightRoad) {
 					//grass
-					cp.setBlockState(j, groundLevel-2, 14, Blocks.DIRT.getDefaultState());
-					cp.setBlockState(j, groundLevel-1, 14, Blocks.GRASS.getDefaultState());
+					cp.setBlockState(j, groundLevel-2, 14, dirt);
+					cp.setBlockState(j, groundLevel-1, 14, grass);
 					//stairs
-					cp.setBlockState(j, groundLevel-2, 13, Blocks.DIRT.getDefaultState());
-					cp.setBlockState(j, groundLevel-1, 13, roadCurbStair.getDefaultState().withProperty(BlockStairs.FACING, EnumFacing.SOUTH));
+					cp.setBlockState(j, groundLevel-2, 13, dirt);
+					cp.setBlockState(j, groundLevel-1, 13, roadCurbStair.withProperty(BlockStairs.FACING, EnumFacing.SOUTH));
 				}
 			}
 			if(!e) {
-				cp.setBlockState(15, groundLevel-2, j, Blocks.DIRT.getDefaultState());
-				cp.setBlockState(15, groundLevel-1, j, Blocks.STONE_SLAB.getDefaultState().withProperty(BlockSlab.HALF, BlockSlab.EnumBlockHalf.TOP));
+				cp.setBlockState(15, groundLevel-2, j, dirt);
+				cp.setBlockState(15, groundLevel-1, j, sidewalk);
 				if((n || j>1) && (s || j<14) || straightRoad) {
 					//grass
-					cp.setBlockState(14, groundLevel-2, j, Blocks.DIRT.getDefaultState());
-					cp.setBlockState(14, groundLevel-1, j, Blocks.GRASS.getDefaultState());
+					cp.setBlockState(14, groundLevel-2, j, dirt);
+					cp.setBlockState(14, groundLevel-1, j, grass);
 					//stairs
-					cp.setBlockState(13, groundLevel-2, j, Blocks.DIRT.getDefaultState());
-					cp.setBlockState(13, groundLevel-1, j, roadCurbStair.getDefaultState().withProperty(BlockStairs.FACING, EnumFacing.EAST));
+					cp.setBlockState(13, groundLevel-2, j, dirt);
+					cp.setBlockState(13, groundLevel-1, j, roadCurbStair.withProperty(BlockStairs.FACING, EnumFacing.EAST));
 				}
 			}
 			if(!w) {
-				cp.setBlockState(0, groundLevel-2, j, Blocks.DIRT.getDefaultState());
-				cp.setBlockState(0, groundLevel-1, j, Blocks.STONE_SLAB.getDefaultState().withProperty(BlockSlab.HALF, BlockSlab.EnumBlockHalf.TOP));
+				cp.setBlockState(0, groundLevel-2, j, dirt);
+				cp.setBlockState(0, groundLevel-1, j, sidewalk);
 				if((n || j>1) && (s || j<14)|| straightRoad) {
 					//grass
-					cp.setBlockState(1, groundLevel-2, j, Blocks.DIRT.getDefaultState());
-					cp.setBlockState(1, groundLevel-1, j, Blocks.GRASS.getDefaultState());
+					cp.setBlockState(1, groundLevel-2, j, dirt);
+					cp.setBlockState(1, groundLevel-1, j, grass);
 					//stairs
-					cp.setBlockState(2, groundLevel-2, j, Blocks.DIRT.getDefaultState());
-					cp.setBlockState(2, groundLevel-1, j, roadCurbStair.getDefaultState().withProperty(BlockStairs.FACING, EnumFacing.WEST));
+					cp.setBlockState(2, groundLevel-2, j, dirt);
+					cp.setBlockState(2, groundLevel-1, j, roadCurbStair.withProperty(BlockStairs.FACING, EnumFacing.WEST));
 				}
 			}
 			//check for corners
 			if(n && w) { //NW
 				//sidewalk
-				cp.setBlockState(0, groundLevel-1, 0, Blocks.STONE_SLAB.getDefaultState().withProperty(BlockSlab.HALF, BlockSlab.EnumBlockHalf.TOP));
-				cp.setBlockState(0, groundLevel-1, 1, Blocks.STONE_SLAB.getDefaultState().withProperty(BlockSlab.HALF, BlockSlab.EnumBlockHalf.TOP));
-				cp.setBlockState(1, groundLevel-1, 0, Blocks.STONE_SLAB.getDefaultState().withProperty(BlockSlab.HALF, BlockSlab.EnumBlockHalf.TOP));
+				cp.setBlockState(0, groundLevel-1, 0, sidewalk);
+				cp.setBlockState(0, groundLevel-1, 1, sidewalk);
+				cp.setBlockState(1, groundLevel-1, 0, sidewalk);
 				//stairs
-				cp.setBlockState(0, groundLevel-1, 2, roadCurbStair.getDefaultState().withProperty(BlockStairs.FACING, EnumFacing.NORTH));
-				cp.setBlockState(1, groundLevel-1, 2, roadCurbStair.getDefaultState().withProperty(BlockStairs.FACING, EnumFacing.NORTH));
-				cp.setBlockState(2, groundLevel-1, 2, roadCurbStair.getDefaultState().withProperty(BlockStairs.FACING, EnumFacing.NORTH));
-				cp.setBlockState(2, groundLevel-1, 1, roadCurbStair.getDefaultState().withProperty(BlockStairs.FACING, EnumFacing.WEST));
-				cp.setBlockState(2, groundLevel-1, 0, roadCurbStair.getDefaultState().withProperty(BlockStairs.FACING, EnumFacing.WEST));
+				cp.setBlockState(0, groundLevel-1, 2, roadCurbStair.withProperty(BlockStairs.FACING, EnumFacing.NORTH));
+				cp.setBlockState(1, groundLevel-1, 2, roadCurbStair.withProperty(BlockStairs.FACING, EnumFacing.NORTH));
+				cp.setBlockState(2, groundLevel-1, 2, roadCurbStair.withProperty(BlockStairs.FACING, EnumFacing.NORTH));
+				cp.setBlockState(2, groundLevel-1, 1, roadCurbStair.withProperty(BlockStairs.FACING, EnumFacing.WEST));
+				cp.setBlockState(2, groundLevel-1, 0, roadCurbStair.withProperty(BlockStairs.FACING, EnumFacing.WEST));
 			}
 			if(n && e) { //NE
-				cp.setBlockState(15, groundLevel-1, 0, Blocks.STONE_SLAB.getDefaultState().withProperty(BlockSlab.HALF, BlockSlab.EnumBlockHalf.TOP));
-				cp.setBlockState(15, groundLevel-1, 1, Blocks.STONE_SLAB.getDefaultState().withProperty(BlockSlab.HALF, BlockSlab.EnumBlockHalf.TOP));
-				cp.setBlockState(14, groundLevel-1, 0, Blocks.STONE_SLAB.getDefaultState().withProperty(BlockSlab.HALF, BlockSlab.EnumBlockHalf.TOP));
+				cp.setBlockState(15, groundLevel-1, 0, sidewalk);
+				cp.setBlockState(15, groundLevel-1, 1, sidewalk);
+				cp.setBlockState(14, groundLevel-1, 0, sidewalk);
 				//stairs
-				cp.setBlockState(15, groundLevel-1, 2, roadCurbStair.getDefaultState().withProperty(BlockStairs.FACING, EnumFacing.NORTH));
-				cp.setBlockState(14, groundLevel-1, 2, roadCurbStair.getDefaultState().withProperty(BlockStairs.FACING, EnumFacing.NORTH));
-				cp.setBlockState(13, groundLevel-1, 2, roadCurbStair.getDefaultState().withProperty(BlockStairs.FACING, EnumFacing.NORTH));
-				cp.setBlockState(13, groundLevel-1, 1, roadCurbStair.getDefaultState().withProperty(BlockStairs.FACING, EnumFacing.EAST));
-				cp.setBlockState(13, groundLevel-1, 0, roadCurbStair.getDefaultState().withProperty(BlockStairs.FACING, EnumFacing.EAST));
+				cp.setBlockState(15, groundLevel-1, 2, roadCurbStair.withProperty(BlockStairs.FACING, EnumFacing.NORTH));
+				cp.setBlockState(14, groundLevel-1, 2, roadCurbStair.withProperty(BlockStairs.FACING, EnumFacing.NORTH));
+				cp.setBlockState(13, groundLevel-1, 2, roadCurbStair.withProperty(BlockStairs.FACING, EnumFacing.NORTH));
+				cp.setBlockState(13, groundLevel-1, 1, roadCurbStair.withProperty(BlockStairs.FACING, EnumFacing.EAST));
+				cp.setBlockState(13, groundLevel-1, 0, roadCurbStair.withProperty(BlockStairs.FACING, EnumFacing.EAST));
 			}
 			if(s && w) { //SW
-				cp.setBlockState(0, groundLevel-1, 15, Blocks.STONE_SLAB.getDefaultState().withProperty(BlockSlab.HALF, BlockSlab.EnumBlockHalf.TOP));
-				cp.setBlockState(0, groundLevel-1, 14, Blocks.STONE_SLAB.getDefaultState().withProperty(BlockSlab.HALF, BlockSlab.EnumBlockHalf.TOP));
-				cp.setBlockState(1, groundLevel-1, 15, Blocks.STONE_SLAB.getDefaultState().withProperty(BlockSlab.HALF, BlockSlab.EnumBlockHalf.TOP));
+				cp.setBlockState(0, groundLevel-1, 15, sidewalk);
+				cp.setBlockState(0, groundLevel-1, 14, sidewalk);
+				cp.setBlockState(1, groundLevel-1, 15, sidewalk);
 				//stairs
-				cp.setBlockState(0, groundLevel-1, 13, roadCurbStair.getDefaultState().withProperty(BlockStairs.FACING, EnumFacing.SOUTH));
-				cp.setBlockState(1, groundLevel-1, 13, roadCurbStair.getDefaultState().withProperty(BlockStairs.FACING, EnumFacing.SOUTH));
-				cp.setBlockState(2, groundLevel-1, 13, roadCurbStair.getDefaultState().withProperty(BlockStairs.FACING, EnumFacing.SOUTH));
-				cp.setBlockState(2, groundLevel-1, 14, roadCurbStair.getDefaultState().withProperty(BlockStairs.FACING, EnumFacing.WEST));
-				cp.setBlockState(2, groundLevel-1, 15, roadCurbStair.getDefaultState().withProperty(BlockStairs.FACING, EnumFacing.WEST));
+				cp.setBlockState(0, groundLevel-1, 13, roadCurbStair.withProperty(BlockStairs.FACING, EnumFacing.SOUTH));
+				cp.setBlockState(1, groundLevel-1, 13, roadCurbStair.withProperty(BlockStairs.FACING, EnumFacing.SOUTH));
+				cp.setBlockState(2, groundLevel-1, 13, roadCurbStair.withProperty(BlockStairs.FACING, EnumFacing.SOUTH));
+				cp.setBlockState(2, groundLevel-1, 14, roadCurbStair.withProperty(BlockStairs.FACING, EnumFacing.WEST));
+				cp.setBlockState(2, groundLevel-1, 15, roadCurbStair.withProperty(BlockStairs.FACING, EnumFacing.WEST));
 			}
 			if(s && e) { //SE
-				cp.setBlockState(15, groundLevel-1, 15, Blocks.STONE_SLAB.getDefaultState().withProperty(BlockSlab.HALF, BlockSlab.EnumBlockHalf.TOP));
-				cp.setBlockState(15, groundLevel-1, 14, Blocks.STONE_SLAB.getDefaultState().withProperty(BlockSlab.HALF, BlockSlab.EnumBlockHalf.TOP));
-				cp.setBlockState(14, groundLevel-1, 15, Blocks.STONE_SLAB.getDefaultState().withProperty(BlockSlab.HALF, BlockSlab.EnumBlockHalf.TOP));
+				cp.setBlockState(15, groundLevel-1, 15, sidewalk);
+				cp.setBlockState(15, groundLevel-1, 14, sidewalk);
+				cp.setBlockState(14, groundLevel-1, 15, sidewalk);
 				//stairs
-				cp.setBlockState(15, groundLevel-1, 13, roadCurbStair.getDefaultState().withProperty(BlockStairs.FACING, EnumFacing.SOUTH));
-				cp.setBlockState(14, groundLevel-1, 13, roadCurbStair.getDefaultState().withProperty(BlockStairs.FACING, EnumFacing.SOUTH));
-				cp.setBlockState(13, groundLevel-1, 13, roadCurbStair.getDefaultState().withProperty(BlockStairs.FACING, EnumFacing.SOUTH));
-				cp.setBlockState(13, groundLevel-1, 14, roadCurbStair.getDefaultState().withProperty(BlockStairs.FACING, EnumFacing.EAST));
-				cp.setBlockState(13, groundLevel-1, 15, roadCurbStair.getDefaultState().withProperty(BlockStairs.FACING, EnumFacing.EAST));
+				cp.setBlockState(15, groundLevel-1, 13, roadCurbStair.withProperty(BlockStairs.FACING, EnumFacing.SOUTH));
+				cp.setBlockState(14, groundLevel-1, 13, roadCurbStair.withProperty(BlockStairs.FACING, EnumFacing.SOUTH));
+				cp.setBlockState(13, groundLevel-1, 13, roadCurbStair.withProperty(BlockStairs.FACING, EnumFacing.SOUTH));
+				cp.setBlockState(13, groundLevel-1, 14, roadCurbStair.withProperty(BlockStairs.FACING, EnumFacing.EAST));
+				cp.setBlockState(13, groundLevel-1, 15, roadCurbStair.withProperty(BlockStairs.FACING, EnumFacing.EAST));
 			}
+		}
+		
+	}
+	
+	void sewerPipes(ChunkPrimer cp, boolean n, boolean e, boolean s, boolean w) {
+		
+		
+		int center = 8;
+		
+		int sewerHeight = groundLevel-4;
+		int waterMainHeight = groundLevel - 7;
+		int intHeight = groundLevel - 9;
+		
+		//messy solution, involves overwriting blocks when overlap exists...
+		for(int i=(w?0:center);i<(e?16:center);++i) {
+			//sewer
+			cp.setBlockState(i, sewerHeight+1, center, bricks);
+			cp.setBlockState(i, sewerHeight+1, center-1, b_stairs.withProperty(BlockStairs.FACING, EnumFacing.SOUTH));
+			cp.setBlockState(i, sewerHeight+1, center+1, b_stairs.withProperty(BlockStairs.FACING, EnumFacing.NORTH));
+			cp.setBlockState(i, sewerHeight, center-1, bricks);
+			cp.setBlockState(i, sewerHeight, center, sewLiq);
+			cp.setBlockState(i, sewerHeight, center+1, bricks);
+			cp.setBlockState(i, sewerHeight-1, center, bricks);
+			cp.setBlockState(i, sewerHeight-1, center-1, b_stairs.withProperty(BlockStairs.FACING, EnumFacing.SOUTH).withProperty(BlockStairs.HALF, BlockStairs.EnumHalf.TOP));
+			cp.setBlockState(i, sewerHeight-1, center+1, b_stairs.withProperty(BlockStairs.FACING, EnumFacing.NORTH).withProperty(BlockStairs.HALF, BlockStairs.EnumHalf.TOP));
+			
+			//water main
+			cp.setBlockState(i, waterMainHeight, center, waterPipe);
+			
+			//internet
+			cp.setBlockState(i, intHeight, center, intCable);
+			
+		}
+		
+		for(int i=(n?0:center);i<(s?16:center);++i) {
+			//sewer
+			cp.setBlockState(center, sewerHeight+1, i, bricks);
+			if(cp.getBlockState(center-1, sewerHeight+1, i) != bricks)
+				cp.setBlockState(center-1, sewerHeight+1, i, b_stairs.withProperty(BlockStairs.FACING, EnumFacing.EAST));
+			if(cp.getBlockState(center+1, sewerHeight+1, i) != bricks)
+				cp.setBlockState(center+1, sewerHeight+1, i, b_stairs.withProperty(BlockStairs.FACING, EnumFacing.WEST));
+				
+			if(cp.getBlockState(center-1, sewerHeight, i) != sewLiq)
+				cp.setBlockState(center-1, sewerHeight, i, bricks);
+			cp.setBlockState(center, sewerHeight, i, sewLiq);
+			if(cp.getBlockState(center+1, sewerHeight, i) != sewLiq)
+				cp.setBlockState(center+1, sewerHeight, i, bricks);
+			
+			cp.setBlockState(center, sewerHeight-1, i, bricks);
+			if(cp.getBlockState(center-1, sewerHeight-1, i) != bricks)
+				cp.setBlockState(center-1, sewerHeight-1, i, b_stairs.withProperty(BlockStairs.FACING, EnumFacing.EAST).withProperty(BlockStairs.HALF, BlockStairs.EnumHalf.TOP));
+			if(cp.getBlockState(center+1, sewerHeight-1, i) != bricks)
+				cp.setBlockState(center+1, sewerHeight-1, i, b_stairs.withProperty(BlockStairs.FACING, EnumFacing.WEST).withProperty(BlockStairs.HALF, BlockStairs.EnumHalf.TOP));
+			
+			//water main
+			cp.setBlockState(center, waterMainHeight, i, waterPipe);
+			
+			//internet
+			cp.setBlockState(center, intHeight, i, intCable);
+			
 		}
 		
 	}
