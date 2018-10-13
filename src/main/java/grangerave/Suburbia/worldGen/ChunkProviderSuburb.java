@@ -149,6 +149,7 @@ public class ChunkProviderSuburb implements IChunkGenerator {
 	        /*
 	        //biome stuff
 	        Biome[] abiome = this.world.getBiomeProvider().getBiomes((Biome[])null, x * 16, z * 16, 16, 16);
+
 	        byte[] abyte = chunk.getBiomeArray();
 
 	        for (int l = 0; l < abyte.length; ++l)
@@ -262,6 +263,7 @@ public class ChunkProviderSuburb implements IChunkGenerator {
 				}else{
 					cp.setBlockState(j, groundLevel-2, k, this.cachedBlocksMulti[len-2][0].getDefaultState());
 					cp.setBlockState(j, groundLevel-1, k, this.cachedBlocksMulti[len-1][0].getDefaultState());
+
 				}
 			}
 		}
@@ -512,7 +514,6 @@ public class ChunkProviderSuburb implements IChunkGenerator {
         	makeDebugHouse(x, z, getHouseDirection(x, z));
         }
         
-        
 		
 	}
 
@@ -541,7 +542,6 @@ public class ChunkProviderSuburb implements IChunkGenerator {
 		// TODO Auto-generated method stub
 		return null;
 	}
-
 
 
 	@Override

@@ -11,6 +11,7 @@ public class WorldTypeSuburb extends WorldType{
 	public WorldTypeSuburb(String name) {
 		super(name);
 		System.out.println("initializing worldTypeSuburb");
+
 	}
 
     @Override
@@ -19,7 +20,6 @@ public class WorldTypeSuburb extends WorldType{
         return false;
     }
 	
-    
     @Override
     public net.minecraft.world.gen.IChunkGenerator getChunkGenerator(World world, String generatorOptions) {
     	return new ChunkProviderSuburb(world, world.getSeed(), world.getWorldInfo().isMapFeaturesEnabled(), generatorOptions);
