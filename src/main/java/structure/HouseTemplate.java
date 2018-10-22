@@ -1,4 +1,4 @@
-package grangerave.Suburbia.worldGen;
+package structure;
 
 import java.util.Random;
 

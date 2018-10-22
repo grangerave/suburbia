@@ -35,6 +35,7 @@ import net.minecraft.world.chunk.IChunkProvider;
 import net.minecraft.world.gen.IChunkGenerator;
 import net.minecraft.world.gen.MapGenBase;
 import net.minecraft.world.gen.NoiseGeneratorPerlin;
+import net.minecraft.world.gen.NoiseGeneratorSimplex;
 import net.minecraft.world.gen.feature.WorldGenLakes;
 import net.minecraft.world.gen.structure.template.PlacementSettings;
 import net.minecraft.world.gen.structure.template.Template;
@@ -114,8 +115,8 @@ public class ChunkProviderSuburb implements IChunkGenerator {
 		System.out.println("init ChunkProviderSuburb");
 		this.world = worldIn;
         this.random = new Random(seed);
-        this.xRandMap = new NoiseGeneratorPerlin(random, 1);
-        this.yRandMap = new NoiseGeneratorPerlin(random, 1);
+        this.xRandMap = new NoiseGeneratorPerlin(random,1);
+        this.yRandMap = new NoiseGeneratorPerlin(random,1);
         this.terrainMap = new NoiseGeneratorPerlin(random,10);
         this.stoneMap1 = new NoiseGeneratorPerlin(random,8);
         this.stoneMap2 = new NoiseGeneratorPerlin(random,4);//noise on top of stoneMap1
@@ -215,12 +216,12 @@ public class ChunkProviderSuburb implements IChunkGenerator {
 	
 	public boolean keepRoadsX(int Chunkx, int Chunkz){
 		//did we remove these adjacent HORIZONTAL roads?
-		return this.xRandMap.getValue(Math.floorDiv(Chunkx,10),Math.floorDiv(Chunkz,10))>this.px;
+		return this.xRandMap.getValue(Math.floorDiv(Chunkx,5),Math.floorDiv(Chunkz,10))>this.px;
 	}
 	
 	public boolean keepRoadsY(int Chunkx, int Chunkz) {
 		//did we remove these adjacent VERTICAL roads?
-		return 1.0 - this.xRandMap.getValue(Math.floorDiv(Chunkx,10),Math.floorDiv(Chunkz,10))>this.py;
+		return 1.0 - this.xRandMap.getValue(Math.floorDiv(Chunkx,10),Math.floorDiv(Chunkz,5))>this.py;
 	}
 	
 	public boolean isRoad(int Chunkx, int Chunkz) {
@@ -563,7 +564,7 @@ public class ChunkProviderSuburb implements IChunkGenerator {
 		WorldServer worldserver = (WorldServer) world;
 		MinecraftServer minecraftserver = world.getMinecraftServer();
 		TemplateManager templatemanager = worldserver.getStructureTemplateManager();
-		Template template = templatemanager.get(minecraftserver, new ResourceLocation(Suburbia.MODID ,"house_a01"));
+		Template template = templatemanager.getTemplate(minecraftserver, new ResourceLocation(Suburbia.MODID ,"house_a01"));
 		if(template == null) {
 			System.out.println(Suburbia.MODID);
 			System.out.println("No Structure found named 'house_a01' !!");
@@ -589,7 +590,7 @@ public class ChunkProviderSuburb implements IChunkGenerator {
 				
 				
 		}
-		BlockPos offset = new BlockPos(-8,0,-8).rotate(rotation);
+		BlockPos offset = new BlockPos(-10,0,-7).rotate(rotation);
 		
 		PlacementSettings placementsettings = (new PlacementSettings()).setMirror(Mirror.NONE)
 				.setRotation(rotation).setIgnoreEntities(false).setChunk((ChunkPos) null)
@@ -642,7 +643,7 @@ public class ChunkProviderSuburb implements IChunkGenerator {
 	@Override
 	public void populate(int x, int z) {
 		//generate structures etc. post main block generation (has to be within chunk) <- apparently not, if you set flag to 2|16
-		BlockFalling.fallInstantly = true;
+		//BlockFalling.fallInstantly = true;
         int i = x * 16;
         int j = z * 16;
         BlockPos blockpos = new BlockPos(i, 0, j);
@@ -652,19 +653,7 @@ public class ChunkProviderSuburb implements IChunkGenerator {
         long l = this.random.nextLong() / 2L * 2L + 1L;
         this.random.setSeed((long)x * k + (long)z * l ^ this.world.getSeed());
         ChunkPos chunkpos = new ChunkPos(x, z);
-        
-        
-        /*
-        if(x==0) {
-        	for(i=0;i<20;i++) {
-        		this.world.setBlockState(blockpos.add(i,this.minY + 10,0), Blocks.BOOKSHELF.getDefaultState(), 2|16);
-        	}
-	        //test lakes
-	        int i1 = this.random.nextInt(16) + 8;
-	        int j1 = this.random.nextInt(256);
-	        int k1 = this.random.nextInt(16) + 8;
-	        (new WorldGenLakes(Blocks.WATER)).generate(this.world, this.random, blockpos.add(i1, j1, k1));
-        }*/
+
         if(this.isHouseRoot(x, z)) {
         	//makeDebugHouse(x, z, getHouseDirection(x, z));
         	makeTestHouse(x, z, getHouseDirection(x, z));
