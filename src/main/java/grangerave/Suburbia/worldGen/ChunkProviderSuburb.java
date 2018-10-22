@@ -5,6 +5,7 @@ import java.util.Random;
 
 import javax.annotation.Nullable;
 
+import grangerave.Suburbia.Suburbia;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockDirt;
 import net.minecraft.block.BlockFalling;
@@ -17,10 +18,15 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.EnumCreatureType;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.EnumDyeColor;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.EnumFacing;
+import net.minecraft.util.Mirror;
+import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.Rotation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.World;
+import net.minecraft.world.WorldServer;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.biome.Biome.SpawnListEntry;
 import net.minecraft.world.chunk.Chunk;
@@ -30,6 +36,9 @@ import net.minecraft.world.gen.IChunkGenerator;
 import net.minecraft.world.gen.MapGenBase;
 import net.minecraft.world.gen.NoiseGeneratorPerlin;
 import net.minecraft.world.gen.feature.WorldGenLakes;
+import net.minecraft.world.gen.structure.template.PlacementSettings;
+import net.minecraft.world.gen.structure.template.Template;
+import net.minecraft.world.gen.structure.template.TemplateManager;
 
 public class ChunkProviderSuburb implements IChunkGenerator {
     private final World world;
@@ -547,6 +556,48 @@ public class ChunkProviderSuburb implements IChunkGenerator {
 		}
 	}
 	
+	private void makeTestHouse(int Chunkx, int Chunkz,EnumFacing direction) {
+		//HouseTemplate template = new HouseTemplate(new TemplateManager("House_A01", null), String "House_A01", BlockPos pos, Rotation rot);
+		BlockPos pos = new BlockPos(Chunkx*16, groundLevel, Chunkz*16);
+		
+		WorldServer worldserver = (WorldServer) world;
+		MinecraftServer minecraftserver = world.getMinecraftServer();
+		TemplateManager templatemanager = worldserver.getStructureTemplateManager();
+		Template template = templatemanager.get(minecraftserver, new ResourceLocation(Suburbia.MODID ,"house_a01"));
+		if(template == null) {
+			System.out.println(Suburbia.MODID);
+			System.out.println("No Structure found named 'house_a01' !!");
+			return;
+		}
+		
+		//Figure out rotation of the house
+		
+		Rotation rotation = Rotation.NONE;
+		switch(direction) {
+			case EAST:
+				rotation = Rotation.COUNTERCLOCKWISE_90;
+				break;
+			case WEST:
+				rotation = Rotation.CLOCKWISE_90;
+				break;
+			case NORTH:
+				rotation = Rotation.CLOCKWISE_180;
+				break;
+			default:
+				rotation = Rotation.NONE;
+				break;
+				
+				
+		}
+		BlockPos offset = new BlockPos(-8,0,-8).rotate(rotation);
+		
+		PlacementSettings placementsettings = (new PlacementSettings()).setMirror(Mirror.NONE)
+				.setRotation(rotation).setIgnoreEntities(false).setChunk((ChunkPos) null)
+				.setReplacedBlock((Block) null).setIgnoreStructureBlock(false);
+
+		template.addBlocksToWorld(world, pos.add(16,0,16).add(offset), placementsettings, 2|16);
+		
+	}
 	
 	private void makeDebugHouse(int Chunkx, int Chunkz,EnumFacing direction) {
 		//temporary function to make a house shape out of bookcases
@@ -583,6 +634,7 @@ public class ChunkProviderSuburb implements IChunkGenerator {
         	
 		}
 		
+		
 	}
 	
 	
@@ -614,7 +666,8 @@ public class ChunkProviderSuburb implements IChunkGenerator {
 	        (new WorldGenLakes(Blocks.WATER)).generate(this.world, this.random, blockpos.add(i1, j1, k1));
         }*/
         if(this.isHouseRoot(x, z)) {
-        	makeDebugHouse(x, z, getHouseDirection(x, z));
+        	//makeDebugHouse(x, z, getHouseDirection(x, z));
+        	makeTestHouse(x, z, getHouseDirection(x, z));
         }
         
 		

@@ -1,0 +1,65 @@
+Houses (from Keralis iDerp3 save)
+
+HouseA:
+-'normal'
+-furnished? 	Yes (3bed 2ba)
+-floors? 	2
+-garage?	No
+-fits 32x32? 	Yes (normal size)
+-notes:
+		original structure
+		could add backdoor if deck
+
+HouseB:
+-'tall'
+-furnished? 	Yes (4bed 3ba + ...)
+-floors? 	3
+-garage?	External*
+-fits 32x32? 	No: need to trim backyard + *combine garage
+-notes:
+		need to replace bedrock
+		unfinished 3d floor (too big for attic
+
+HouseC:
+-'squat'
+-furnished? 	No
+-floors? 	1
+-garage?	Yes
+-fits 32x32? 	No: need to minority redesign roof/condense floorplan!!
+-notes:
+		replace sand / sandstone
+
+HouseD:
+-'sprawling'
+-furnished? 	No
+-floors? 	1
+-garage?	Yes
+-fits 32x32? 	No: need to majorly condense floorplan!!
+-notes:
+		replace sand / sandstone
+		unused 2nd floor area!
+
+HouseE:
+-'brickgarage'
+-furnished? 	No (2br 1ba)
+-floors? 	1
+-garage?	Yes
+-fits 32x32? 	Yes
+-notes:		no kitchen space!
+
+HouseF:
+-'poundsign'
+-furnished? 	No (1br? 1ba)
+-floors? 	1
+-garage?	No
+-fits 32x32? 	Yes
+-notes:		only one giant bedroom?
+		redecorate bathroom + kitchen
+
+HouseG:
+-'teensy sandstone'
+-furnished? 	No (0ba ?br?)
+-floors? 	2*
+-garage?	Yes (carport)
+-fits 32x32? 	Yes
+-notes:		tiny- no kitchen space!, no bathroom space!
