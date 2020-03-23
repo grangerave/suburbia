@@ -167,8 +167,8 @@ public class ChunkProviderSuburb implements IChunkGenerator {
 	        ChunkPrimer chunkprimer = new ChunkPrimer();
 
 	        //road logic
-	        if(x%5==0) { //yroad
-	        	if(z%5==0) { //intersection
+	        if(x%7==0) { //yroad
+	        	if(z%7==0) { //intersection
 	        		roadChunk(chunkprimer,true,true,x,z);
 	        		//n e s w
 	        		sidewalkChunk(chunkprimer, keepRoadsY(x,z-1),keepRoadsX(x+1,z),keepRoadsY(x,z+1),keepRoadsX(x-1,z));
@@ -182,7 +182,7 @@ public class ChunkProviderSuburb implements IChunkGenerator {
 	        	} else {
 	        		genericChunk(chunkprimer,x,z);
 	        	}
-	        }else if(z%5==0) { //xroad
+	        }else if(z%7==0) { //xroad
 	        	//remove this road? HORIZONTAL ROAD
 	        	if(keepRoadsX(x,z)) {
 	        		//roadX
@@ -216,17 +216,17 @@ public class ChunkProviderSuburb implements IChunkGenerator {
 	
 	public boolean keepRoadsX(int Chunkx, int Chunkz){
 		//did we remove these adjacent HORIZONTAL roads?
-		return this.xRandMap.getValue(Math.floorDiv(Chunkx,5),Math.floorDiv(Chunkz,10))>this.px;
+		return this.xRandMap.getValue(Math.floorDiv(Chunkx,7),Math.floorDiv(Chunkz,14))>this.px;
 	}
 	
 	public boolean keepRoadsY(int Chunkx, int Chunkz) {
 		//did we remove these adjacent VERTICAL roads?
-		return 1.0 - this.xRandMap.getValue(Math.floorDiv(Chunkx,10),Math.floorDiv(Chunkz,5))>this.py;
+		return 1.0 - this.xRandMap.getValue(Math.floorDiv(Chunkx,14),Math.floorDiv(Chunkz,7))>this.py;
 	}
 	
 	public boolean isRoad(int Chunkx, int Chunkz) {
-		if(Chunkx%5 == 0) { //yroad
-			if(Chunkz%5 == 0) { //intersection
+		if(Chunkx%7 == 0) { //yroad
+			if(Chunkz%7 == 0) { //intersection
         		return true;
         	}
         	if(keepRoadsY(Chunkx,Chunkz)) {
@@ -234,7 +234,7 @@ public class ChunkProviderSuburb implements IChunkGenerator {
         		return true;
         	}
 			return false;
-		} else if (Chunkz%5 == 0 ) { //xroad
+		} else if (Chunkz%7 == 0 ) { //xroad
 			if(keepRoadsX(Chunkx,Chunkz)) {
         		//roadY
         		return true;
@@ -535,9 +535,60 @@ public class ChunkProviderSuburb implements IChunkGenerator {
 		return (flag && Math.floorMod(Chunkx,5)%2==1 && Math.floorMod(Chunkz,5)%2==1);
 	}
 	
+	public boolean isHouseRoot3(int Chunkx, int Chunkz) {
+		//assumes 3x3 grid of houses
+		//return true if valid chunk for bottom left of house
+		//no rotation info returned!
+		
+		boolean flag = true;
+		int bx = Math.floorMod(Chunkx,7);
+		int bz = Math.floorMod(Chunkz,7);
+		if(Math.floorMod(Chunkx,14)>=7) {//odd chunk in X
+			//default ODD chunk in Y (always square)
+			//square	
+			if(Math.floorMod(Chunkz,14)<7) {//even chunk in Y (could be shifted in X)
+				if(!keepRoadsX(Chunkx,Chunkz)) { //roads removed
+					flag = ((bx==5)&&keepRoadsY(Chunkx+7,Chunkz)) || ((bx==1)&&keepRoadsY(Chunkx-7,Chunkz));
+					return (flag && bx%4==1 && bz%2==0);
+				}//roads remain
+				//square
+			}
+		}else {//even chunk in X (potentially shifted)
+			if(Math.floorMod(Chunkz,14)>=7) {//odd chunk in Y (could be shifted in X)
+				if(!keepRoadsY(Chunkx,Chunkz)) { //roads removed
+					flag = ((bz==5)&&keepRoadsX(Chunkx,Chunkz+7)) || ((bz==1)&&keepRoadsX(Chunkx,Chunkz-7));
+					return (flag && bx%2==0);
+				}
+			}else {//both chunks even
+				if(!keepRoadsY(Chunkx,Chunkz)) { //roads Y removed
+					if(keepRoadsX(Chunkx,Chunkz)) {//roads X remain
+						return (flag && bx%2==0 && bz%4==1);
+					}
+				}else if(!keepRoadsX(Chunkx,Chunkz)) { //roads removed
+					if(keepRoadsY(Chunkx,Chunkz)) {
+						return (flag && bx%4==1 && bz%2==0);
+					}
+					//both roads removed
+				}
+				
+			}
+		}
+		//default to square
+		//iterate through default square shape to check house positions
+		//square
+		flag = false;
+		flag = flag || (bx%2==1 && bz%2==1) && (bx==1 && bz==1) && (isRoad(Chunkx-1,Chunkz) || isRoad(Chunkx,Chunkz-1)); //SW
+		flag = flag || (bx%2==1 && bz%2==1) && (bx==1 && bz>=3) && (isRoad(Chunkx-1,Chunkz) || isRoad(Chunkx,Chunkz+2)); //NW
+		flag = flag || (bx%2==1 && bz%2==1) && (bx>=3 && bz==1) && (isRoad(Chunkx+2,Chunkz) || isRoad(Chunkx,Chunkz-1)); //SE
+		flag = flag || (bx%2==1 && bz%2==1) && (bx==5 && bz>=3) && (isRoad(Chunkx+2,Chunkz) || isRoad(Chunkx,Chunkz+2)); //NE
+		flag = flag || (bx%2==1 && bz%2==1) && (bx>=3 && bz==5) && (isRoad(Chunkx+2,Chunkz) || isRoad(Chunkx,Chunkz+2)); //NE
+		
+		return (flag && bx%2==1 && bz%2==1 && !(bx==3 && bz==3));
+	}
+	
 	public EnumFacing getHouseDirection(int Chunkx,int Chunkz) {
-		int bx = Math.floorMod(Chunkx,5);
-		int bz = Math.floorMod(Chunkz,5);
+		int bx = Math.floorMod(Chunkx,7);
+		int bz = Math.floorMod(Chunkz,7);
 		
 		//determine if even x
 		if (bx==1) { //quad X spacing WEST
@@ -546,7 +597,7 @@ public class ChunkProviderSuburb implements IChunkGenerator {
 			//if(bz==1 || bz==3)// quad Y spacing
 				return isRoad(Chunkx,Chunkz-1) ? EnumFacing.NORTH : EnumFacing.SOUTH; //north?
 				
-		}else if (bx==3) {//quad spacing EAST
+		}else if (bx>=3) {//quad spacing EAST
 			if(isRoad(Chunkx+2,Chunkz))
 				return EnumFacing.EAST;
 			return isRoad(Chunkx,Chunkz-1) ? EnumFacing.NORTH : EnumFacing.SOUTH;
@@ -643,6 +694,7 @@ public class ChunkProviderSuburb implements IChunkGenerator {
 	@Override
 	public void populate(int x, int z) {
 		//generate structures etc. post main block generation (has to be within chunk) <- apparently not, if you set flag to 2|16
+		//each chunk can write in x+1, z+1 adjacent chunks without penalty
 		//BlockFalling.fallInstantly = true;
         int i = x * 16;
         int j = z * 16;
@@ -654,7 +706,7 @@ public class ChunkProviderSuburb implements IChunkGenerator {
         this.random.setSeed((long)x * k + (long)z * l ^ this.world.getSeed());
         ChunkPos chunkpos = new ChunkPos(x, z);
 
-        if(this.isHouseRoot(x, z)) {
+        if(this.isHouseRoot3(x, z)) {
         	//makeDebugHouse(x, z, getHouseDirection(x, z));
         	makeTestHouse(x, z, getHouseDirection(x, z));
         }
